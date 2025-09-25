@@ -7,10 +7,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #121212;       /* тёмный фон */
-      --fg: #e6e1e5;       /* светлый текст */
-      --accent: #bb86fc;   /* фиолетовый акцент */
-      --weekend: #ff6b6b;  /* красный для выходных */
+      --bg: #121212;
+      --fg: #e6e1e5;
+      --accent: #bb86fc;
+      --weekend: #ff6b6b;
+      --faded: #555; /* светлые цифры для соседних месяцев */
       --radius: 16px;
       --font: "Montserrat", sans-serif;
     }
@@ -94,6 +95,10 @@
       border-radius: 50%;
       padding: 0.4rem;
     }
+
+    .faded {
+      color: var(--faded);
+    }
   </style>
 </head>
 <body>
@@ -132,10 +137,13 @@
       calendarBody.innerHTML = "";
       monthYear.textContent = `${months[month]} ${year}`;
 
-      const firstDay = new Date(year, month).getDay();
+      const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevMonthDays = new Date(year, month, 0).getDate();
 
       let date = 1;
+      let nextMonthDate = 1;
+
       for (let i = 0; i < 6; i++) {
         let row = document.createElement("tr");
 
@@ -144,9 +152,14 @@
           let dayIndex = (j % 7);
 
           if (i === 0 && j < (firstDay === 0 ? 7 : firstDay)) {
-            cell.textContent = "";
+            // дни предыдущего месяца
+            let prevDate = prevMonthDays - (firstDay - j) + 1;
+            cell.textContent = prevDate;
+            cell.classList.add("faded");
           } else if (date > daysInMonth) {
-            break;
+            // дни следующего месяца
+            cell.textContent = nextMonthDate++;
+            cell.classList.add("faded");
           } else {
             cell.textContent = date;
 
