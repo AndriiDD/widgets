@@ -2,25 +2,21 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Dark Calendar - Montserrat</title>
-  <!-- Подключение Montserrat -->
+  <title>iOS Dark Calendar</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #121212;
-      --fg: #e6e1e5;
-      --accent: #bb86fc;
-      --weekend: #ff6b6b;
-      --faded: #555; /* светлые цифры для соседних месяцев */
-      --radius: 16px;
+      --fg: #f5f5f7;
+      --accent: #0a84ff;
+      --weekend: #ff453a;
+      --faded: #8e8e93;
       --font: "Montserrat", sans-serif;
     }
 
     body {
       margin: 0;
       font-family: var(--font);
-      background: var(--bg);
-      color: var(--fg);
+      background: #000;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -28,182 +24,210 @@
     }
 
     .calendar {
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      background: rgba(18,18,18,0.9);
-      width: 360px;
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      background: rgba(28,28,30,0.55);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      color: var(--fg);
+      padding: 1rem;
+      width: 380px;
+      transition: opacity 0.4s ease;
     }
 
-    .calendar header {
+    .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
     }
 
-    .calendar h2 {
-      margin: 0;
-      font-size: 1.4rem;
+    .month-year {
       font-weight: 600;
+      font-size: 1.2rem;
       color: var(--accent);
-    }
-
-    .nav-btn {
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 1.5rem;
       cursor: pointer;
-      transition: color 0.2s;
-    }
-    .nav-btn:hover {
-      color: #fff;
+      user-select: none;
     }
 
-    .calendar table {
-      width: 100%;
-      border-collapse: collapse;
+    .arrow {
+      width: 0; height: 0;
+      border-style: solid;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .arrow:hover { transform: scale(1.2); }
+    .left {
+      border-width: 8px 10px 8px 0;
+      border-color: transparent var(--accent) transparent transparent;
+    }
+    .right {
+      border-width: 8px 0 8px 10px;
+      border-color: transparent transparent transparent var(--accent);
+    }
+
+    .days, .dates {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
       text-align: center;
     }
 
-    .calendar th {
+    .day {
       font-weight: 600;
-      padding: 0.5rem 0;
       color: var(--accent);
     }
 
-    .calendar td {
+    .date {
       padding: 0.6rem 0;
-      border-radius: 8px;
+      border-radius: 12px;
+      transition: background 0.2s, transform 0.2s;
       cursor: pointer;
-      transition: background 0.2s;
+    }
+    .date:hover {
+      background: rgba(10,132,255,0.2);
+      transform: scale(1.05);
     }
 
-    .calendar td:hover {
-      background: var(--accent);
-      color: #000;
-    }
-
-    .weekend {
-      color: var(--weekend);
-    }
+    .weekend { color: var(--weekend); }
+    .faded { color: var(--faded); }
 
     .today {
-      border: 1px solid var(--accent);
-      border-radius: 50%;
-      padding: 0.4rem;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(10,132,255,0.6);
     }
 
-    .faded {
-      color: var(--faded);
+    .active {
+      background: var(--accent);
+      color: #000;
+      border-radius: 12px;
+    }
+
+    .fade-out { opacity: 0; }
+    .fade-in { opacity: 1; }
+
+    .event::after {
+      content: "•";
+      display: block;
+      font-size: 1.2rem;
+      line-height: 0.5;
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
   <div class="calendar">
-    <header>
-      <button class="nav-btn" id="prev">&#8592;</button>
-      <h2 id="monthYear"></h2>
-      <button class="nav-btn" id="next">&#8594;</button>
-    </header>
-    <table>
-      <thead>
-        <tr>
-          <th>П</th><th>В</th><th>С</th><th>Ч</th><th>П</th><th>С</th><th>В</th>
-        </tr>
-      </thead>
-      <tbody id="calendarBody"></tbody>
-    </table>
+    <div class="header">
+      <div class="arrow left" id="prev"></div>
+      <div class="month-year" id="monthYear"></div>
+      <div class="arrow right" id="next"></div>
+    </div>
+    <div class="days">
+      <div class="day">Пн</div><div class="day">Вт</div><div class="day">Ср</div>
+      <div class="day">Чт</div><div class="day">Пт</div><div class="day">Сб</div><div class="day">Вс</div>
+    </div>
+    <div class="dates" id="dates"></div>
   </div>
 
   <script>
     const monthYear = document.getElementById("monthYear");
-    const calendarBody = document.getElementById("calendarBody");
+    const datesEl = document.getElementById("dates");
     const prevBtn = document.getElementById("prev");
     const nextBtn = document.getElementById("next");
 
-    const months = [
-      "Январь","Февраль","Март","Апрель","Май","Июнь",
-      "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"
-    ];
+    const months = ["Январь","Февраль","Март","Апрель","Май","Июнь",
+      "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 
     let today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
 
-    function generateCalendar(month, year) {
-      calendarBody.innerHTML = "";
+    const events = {
+      "2025-09-12": true,
+      "2025-09-26": true
+    };
+
+    function renderCalendar(month, year) {
+      datesEl.innerHTML = "";
       monthYear.textContent = `${months[month]} ${year}`;
 
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const prevMonthDays = new Date(year, month, 0).getDate();
 
-      let date = 1;
-      let nextMonthDate = 1;
+      let start = firstDay === 0 ? 6 : firstDay - 1;
 
-      for (let i = 0; i < 6; i++) {
-        let row = document.createElement("tr");
+      for (let i = start; i > 0; i--) {
+        const el = document.createElement("div");
+        el.className = "date faded";
+        el.textContent = prevMonthDays - i + 1;
+        datesEl.appendChild(el);
+      }
 
-        for (let j = 1; j <= 7; j++) {
-          let cell = document.createElement("td");
-          let dayIndex = (j % 7);
+      for (let d = 1; d <= daysInMonth; d++) {
+        const el = document.createElement("div");
+        el.className = "date";
+        el.textContent = d;
 
-          if (i === 0 && j < (firstDay === 0 ? 7 : firstDay)) {
-            // дни предыдущего месяца
-            let prevDate = prevMonthDays - (firstDay - j) + 1;
-            cell.textContent = prevDate;
-            cell.classList.add("faded");
-          } else if (date > daysInMonth) {
-            // дни следующего месяца
-            cell.textContent = nextMonthDate++;
-            cell.classList.add("faded");
-          } else {
-            cell.textContent = date;
-
-            // выходные
-            if (dayIndex === 0 || dayIndex === 6) {
-              cell.classList.add("weekend");
-            }
-
-            // сегодня
-            if (
-              date === today.getDate() &&
-              year === today.getFullYear() &&
-              month === today.getMonth()
-            ) {
-              cell.classList.add("today");
-            }
-
-            date++;
-          }
-          row.appendChild(cell);
+        let date = new Date(year, month, d);
+        let day = date.getDay();
+        if (day === 0 || day === 6) el.classList.add("weekend");
+        if (d === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
+          el.classList.add("today");
         }
-        calendarBody.appendChild(row);
+
+        const key = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        if (events[key]) el.classList.add("event");
+
+        el.addEventListener("click", () => {
+          document.querySelectorAll(".date").forEach(n => n.classList.remove("active"));
+          el.classList.add("active");
+        });
+
+        datesEl.appendChild(el);
+      }
+
+      let totalCells = start + daysInMonth;
+      let nextDays = 7 - (totalCells % 7);
+      if (nextDays < 7) {
+        for (let i = 1; i <= nextDays; i++) {
+          const el = document.createElement("div");
+          el.className = "date faded";
+          el.textContent = i;
+          datesEl.appendChild(el);
+        }
       }
     }
 
+    function animateChange(callback) {
+      datesEl.classList.add("fade-out");
+      setTimeout(() => {
+        callback();
+        datesEl.classList.remove("fade-out");
+        datesEl.classList.add("fade-in");
+        setTimeout(() => datesEl.classList.remove("fade-in"), 400);
+      }, 400);
+    }
+
     prevBtn.addEventListener("click", () => {
-      currentMonth--;
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      }
-      generateCalendar(currentMonth, currentYear);
+      animateChange(() => {
+        currentMonth--;
+        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        renderCalendar(currentMonth, currentYear);
+      });
     });
 
     nextBtn.addEventListener("click", () => {
-      currentMonth++;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      }
-      generateCalendar(currentMonth, currentYear);
+      animateChange(() => {
+        currentMonth++;
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        renderCalendar(currentMonth, currentYear);
+      });
     });
 
-    generateCalendar(currentMonth, currentYear);
+    renderCalendar(currentMonth, currentYear);
   </script>
 </body>
 </html>
