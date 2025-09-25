@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>iOS Dark Calendar</title>
+  <title>iOS Dark Calendar Transparent</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -16,7 +16,7 @@
     body {
       margin: 0;
       font-family: var(--font);
-      background: #000;
+      background: transparent; /* фон страницы прозрачный */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,7 +24,7 @@
     }
 
     .calendar {
-      background: rgba(28,28,30,0.55);
+      background: rgba(28,28,30,0.25); /* полупрозрачный */
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid rgba(255,255,255,0.15);
