@@ -16,7 +16,7 @@
     body {
       margin: 0;
       font-family: var(--font);
-      background: transparent; /* фон страницы прозрачный */
+      background: transparent;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,16 +24,16 @@
     }
 
     .calendar {
-      background: rgba(28,28,30,0.25); /* полупрозрачный */
+      background: rgba(28,28,30,0.25);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
       color: var(--fg);
       padding: 1rem;
       width: 380px;
       transition: opacity 0.4s ease;
+      /* box-shadow убран */
     }
 
     .header {
@@ -96,7 +96,6 @@
     .today {
       border: 2px solid var(--accent);
       border-radius: 12px;
-      box-shadow: 0 0 8px rgba(10,132,255,0.6);
     }
 
     .active {
